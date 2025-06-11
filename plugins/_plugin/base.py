@@ -60,6 +60,8 @@ class PluginManager:
             mod = self.load_module(name, file_)
             if mod:
                 self.modules[name] = mod.Plugin()  # save the main class
+
+        # TODO sort by PluginBase.order() !
         return self.modules
 
     @staticmethod

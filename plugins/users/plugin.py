@@ -29,6 +29,10 @@ class Plugin:
         # or if wayland : return False ?
         return True
 
+    @staticmethod
+    def order() -> int:
+        return 20
+
     def app(self):
         # return class and not object
         return UserMain

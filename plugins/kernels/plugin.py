@@ -24,6 +24,10 @@ class Plugin:
     def isEnable() -> bool:
         return True
 
+    @staticmethod
+    def order() -> int:
+        return 10
+
     def app(self):
         # return class and not object
         return KernelMain
