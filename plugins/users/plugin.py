@@ -13,7 +13,7 @@ class UserMain(QWidget):
 
 
 class Plugin:
-    NAME = "User Manager"
+    NAME = "User"
     ORDER = 20  # 10 by 10, order in main app
 
     @classmethod

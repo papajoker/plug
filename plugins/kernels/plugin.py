@@ -10,7 +10,7 @@ class KernelMain(QWidget):
 
 
 class Plugin:
-    NAME = "Kernels Manager"
+    NAME = "Kernels"
     ORDER = 10  # 10 by 10, order in main app
 
     @classmethod

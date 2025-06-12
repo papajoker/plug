@@ -2,7 +2,7 @@
 from functools import partial
 from plugins._plugin.base import PluginBase, PluginManager
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QApplication,
@@ -15,22 +15,32 @@ from PySide6.QtWidgets import (
 
 
 class MainWindow(QMainWindow):
+    USE_TABS = True
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle("My App with plugins")
-        self.setMinimumHeight(200)
+        self.resize(600, 450)
 
-        # self.tabs = QTabWidget()
-        # self.tabs.setTabPosition(QTabWidget.TabPosition.East)
-        self.tabs = QStackedLayout()
+        if self.USE_TABS:
+            self.tabs = QTabWidget()  # TODO rewrite paint() for display icon + text in tab
+            self.tabs.setTabPosition(QTabWidget.TabPosition.East)
+            self.tabs.setIconSize(QSize(42, 42))
+            self.tabs.setStyleSheet("QTabBar::tab { min-width: 100px;  alignment: center;}")
+        else:
+            self.tabs = QStackedLayout()
 
-        widget = QWidget()
-        widget.setLayout(self.tabs)
-        self.setCentralWidget(widget)
-        # self.setCentralWidget(self.tabs)
+        if isinstance(self.tabs, QTabWidget):
+            self.setCentralWidget(self.tabs)
+        else:
+            widget = QWidget()
+            widget.setLayout(self.tabs)
+            self.setCentralWidget(widget)
 
-        self.toolbar = QToolBar("My main toolbar")
-        self.addToolBar(self.toolbar)
+        self.toolbar = QToolBar("modules")
+        self.toolbar.setMovable(False)
+        self.toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
+        self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, self.toolbar)
         self._init_plugins()
 
     def _init_plugins(self):
@@ -38,34 +48,35 @@ class MainWindow(QMainWindow):
         plugin_manager.walk("")
 
         for tab_id, name in enumerate(plugin_manager.modules):
-            obj_plug: PluginBase = plugin_manager.modules[name]
+            plugin: PluginBase = plugin_manager.modules[name]
             print()
-            print(tab_id, obj_plug.ORDER, name, " python module:", obj_plug)
-            print(" ", obj_plug.NAME)
+            print(tab_id, plugin.ORDER, name, " python module:", plugin)
 
-            if not obj_plug.isEnable():
+            if not plugin.isEnable():
                 # plugin is not for this desktop or config
                 continue
 
             # create zone
-            widget_class = obj_plug.get_class()  # get widjet class
+            widget_class = plugin.get_class()  # get widjet class
             if widget_class:
                 print("  main class imported by plugin:", widget_class)
                 if widget := widget_class(self):  # create instance of widget
                     print("  add vue:", widget)
-                    # self.tabs.addTab(widget, obj_plug.NAME)
-                    self.tabs.addWidget(widget)
+                    if isinstance(self.tabs, QTabWidget):
+                        self.tabs.addTab(widget, plugin.getIcon(), "")
+                    else:
+                        self.tabs.addWidget(widget)
 
             # create menu/btn entries
-            # we have some functions without create object (icon, title, ...)
-            action = QAction(obj_plug.getIcon(), obj_plug.getTitle(), self)
-            action.triggered.connect(partial(self.change_module, tab_id))
+            action = QAction(plugin.getIcon(), plugin.getTitle(), self)
+            action.triggered.connect(partial(self.change_module, tab_id, plugin.NAME))
             self.toolbar.addAction(action)
 
-    def change_module(self, id_):
+    def change_module(self, id_, title):
         tab = self.tabs
         tab.setCurrentIndex(id_)
-        print("page:", tab.currentIndex(), "/", tab.count())
+        # print("page:", tab.currentIndex(), "/", tab.count())
+        self.setWindowTitle("My App with plugins : " + title)
 
 
 app = QApplication([])
