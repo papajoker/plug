@@ -11,6 +11,11 @@ class PluginBase:
         pass
 
     @classmethod
+    def getMenu(cls):
+        # if necessary ?
+        pass
+
+    @classmethod
     def getTitle(cls) -> str:
         return cls.NAME
 
