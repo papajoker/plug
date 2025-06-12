@@ -11,6 +11,10 @@ class PluginBase:
     def getAction(cls):
         pass
 
+    @staticmethod
+    def getIcon():
+        pass
+
     @classmethod
     def getMenu(cls):
         # if necessary ?
@@ -24,8 +28,9 @@ class PluginBase:
     def isEnable() -> bool:
         return True
 
+    @staticmethod
     def get_class(self) -> type:
-        return None
+        return type(None)
 
 
 class Loader_module:
@@ -54,7 +59,7 @@ class PluginManager:
         self.path = Path(__file__).parent.parent
         print("défault dir for modules:", self.path)
 
-    def walk(self, path=""):
+    def scan(self, path=""):
         if path:
             self.path = Path(path)
         for directory in (d for d in self.path.iterdir() if d.is_dir() and not d.name.startswith("_")):

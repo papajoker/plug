@@ -4,9 +4,11 @@ from PySide6.QtWidgets import QWidget, QLabel
 
 class KernelMain(QWidget):
     def __init__(self, parent):
-        super().__init__(parent)
-        self.setStyleSheet("background-color:#66bb00; ")
-        QLabel("linux122", self)
+        super().__init__(parent=parent)
+        self.setWindowTitle("Manage manjaro kernels")
+
+        self.setStyleSheet("background-color: #380;")
+        QLabel("linux122", parent=self, margin=20)
 
 
 class Plugin:
@@ -19,12 +21,13 @@ class Plugin:
 
     @staticmethod
     def getIcon() -> QIcon:
-        return QIcon.fromTheme(QIcon.ThemeIcon.ListAdd)
+        return QIcon.fromTheme(QIcon.ThemeIcon.Computer)
 
     @staticmethod
     def isEnable() -> bool:
         return True
 
-    def get_class(self):
-        # return class and not object
+    @staticmethod
+    def get_class():
+        # return class and not instance
         return KernelMain

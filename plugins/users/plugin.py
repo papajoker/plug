@@ -7,9 +7,11 @@ from PySide6.QtWidgets import QWidget, QLabel
 
 class UserMain(QWidget):
     def __init__(self, parent):
-        super().__init__(parent)
-        self.setStyleSheet("background-color: #cc00cc; ")
-        QLabel("Super User", self)
+        super().__init__(parent=parent)
+        self.setWindowTitle("Manage users")
+
+        self.setStyleSheet("background-color: #909;")
+        QLabel("Super User", parent=self, margin=20)
 
 
 class Plugin:
@@ -22,7 +24,7 @@ class Plugin:
 
     @staticmethod
     def getIcon() -> QIcon:
-        return QIcon.fromTheme(QIcon.ThemeIcon.Computer)
+        return QIcon.fromTheme(QIcon.ThemeIcon.GoHome)
 
     @staticmethod
     def isEnable() -> bool:
@@ -30,6 +32,7 @@ class Plugin:
         # or if wayland : return False ?
         return True
 
-    def get_class(self):
-        # return class and not object
+    @staticmethod
+    def get_class():
+        # return class and not instance
         return UserMain

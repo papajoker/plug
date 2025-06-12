@@ -31,6 +31,7 @@ class MainWindow(QMainWindow):
             self.tabs.setStyleSheet("QTabBar::tab { min-width: 100px;  alignment: center;}")
         else:
             self.tabs = QStackedLayout()
+        self.tabs.currentChanged.connect(self.module_changed)
 
         if isinstance(self.tabs, QTabWidget):
             self.setCentralWidget(self.tabs)
@@ -43,6 +44,7 @@ class MainWindow(QMainWindow):
         self.toolbar.setMovable(False)
         self.toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
         self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, self.toolbar)
+
         self._init_plugins()
 
     def _init_plugins(self):
@@ -53,18 +55,18 @@ class MainWindow(QMainWindow):
             print("load one plugin ?", one)
 
         plugin_manager = PluginManager()
-        plugin_manager.walk("")
+        plugin_manager.scan("")
 
         if "-h" in sys.argv:
             print("Available plugins: ", ", ".join(f"--{p.lower()}" for p in plugin_manager.modules.keys()))
             exit(0)
 
-        for tab_id, name in enumerate(plugin_manager.modules):
+        for name in plugin_manager.modules:
             if one and name != one:
                 continue
             plugin: PluginBase = plugin_manager.modules[name]
             print()
-            print(tab_id, plugin.ORDER, name, " python module:", plugin)
+            print(plugin.ORDER, name, " python module:", plugin)
 
             if not plugin.isEnable():
                 # plugin is not for this desktop or config
@@ -72,26 +74,32 @@ class MainWindow(QMainWindow):
 
             # create zone
             widget_class = plugin.get_class()  # get widjet class
-            if widget_class:
-                print("  main class imported by plugin:", widget_class)
-                if widget := widget_class(self):  # create instance of widget
-                    print("  add vue:", widget)
-                    if isinstance(self.tabs, QTabWidget):
-                        self.tabs.addTab(widget, plugin.getIcon(), "")
-                    else:
-                        self.tabs.addWidget(widget)
+            if not widget_class or not issubclass(widget_class, QWidget):
+                continue
+
+            print("  main class imported by plugin:", widget_class)
+
+            widget = widget_class(self)
+            if not widget:
+                continue
+
+            print("  add view:", widget)
+
+            if isinstance(self.tabs, QTabWidget):
+                tab_id = self.tabs.addTab(widget, plugin.getIcon(), "")
+            else:
+                tab_id = self.tabs.addWidget(widget)
 
             # create menu/btn entries
-            if not one:
-                action = QAction(plugin.getIcon(), plugin.getTitle(), self)
-                action.triggered.connect(partial(self.change_module, tab_id, plugin.NAME))
-                self.toolbar.addAction(action)
+            action = QAction(plugin.getIcon(), plugin.getTitle(), self)
+            action.triggered.connect(partial(self.change_module, tab_id, plugin.NAME))
+            self.toolbar.addAction(action)
 
-    def change_module(self, id_, title):
-        tab = self.tabs
-        tab.setCurrentIndex(id_)
-        # print("page:", tab.currentIndex(), "/", tab.count())
-        self.setWindowTitle("My App with plugins : " + title)
+    def module_changed(self, tab_id: int):
+        self.setWindowTitle(self.tabs.currentWidget().windowTitle())
+
+    def change_module(self, tab_id: int, title: str):
+        self.tabs.setCurrentIndex(tab_id)
 
 
 app = QApplication([])
