@@ -59,7 +59,11 @@ class PluginManager:
             print("    found sub-dir:", directory.name, directory)
             mod = self.load_module(name, file_)
             if mod:
-                self.modules[name] = mod.Plugin()  # save the main class
+                try:
+                    self.modules[name] = mod.Plugin()  # save the main class
+                except AttributeError:
+                    # no class Plugin in file !
+                    pass
 
         # TODO sort by PluginBase.order() !
         return self.modules
