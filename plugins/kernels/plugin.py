@@ -11,6 +11,7 @@ class KernelMain(QWidget):
 
 class Plugin:
     NAME = "Kernels Manager"
+    ORDER = 10  # 10 by 10, order in main app
 
     @classmethod
     def getTitle(cls) -> str:
@@ -24,10 +25,6 @@ class Plugin:
     def isEnable() -> bool:
         return True
 
-    @staticmethod
-    def order() -> int:
-        return 10
-
-    def app(self):
+    def get_class(self):
         # return class and not object
         return KernelMain

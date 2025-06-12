@@ -14,6 +14,7 @@ class UserMain(QWidget):
 
 class Plugin:
     NAME = "User Manager"
+    ORDER = 20  # 10 by 10, order in main app
 
     @classmethod
     def getTitle(cls) -> str:
@@ -29,10 +30,6 @@ class Plugin:
         # or if wayland : return False ?
         return True
 
-    @staticmethod
-    def order() -> int:
-        return 20
-
-    def app(self):
+    def get_class(self):
         # return class and not object
         return UserMain

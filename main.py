@@ -37,28 +37,29 @@ class MainWindow(QMainWindow):
         plugin_manager = PluginManager()
         plugin_manager.walk("")
 
-        for i, name in enumerate(plugin_manager.modules):
+        for tab_id, name in enumerate(plugin_manager.modules):
             obj_plug: PluginBase = plugin_manager.modules[name]
-            print(i, name, obj_plug)
-            print(obj_plug.NAME)
+            print()
+            print(tab_id, obj_plug.ORDER, name, " python module:", obj_plug)
+            print(" ", obj_plug.NAME)
 
             if not obj_plug.isEnable():
                 # plugin is not for this desktop or config
                 continue
 
             # create zone
-            widget_class = obj_plug.app()
+            widget_class = obj_plug.get_class()  # get widjet class
             if widget_class:
-                print("main class imported by plugin:", widget_class)
-                widget = widget_class(self)  # create object
-                print("add vue:", widget)
-                # self.tabs.addTab(widget, obj_plug.NAME)
-                self.tabs.addWidget(widget)
+                print("  main class imported by plugin:", widget_class)
+                if widget := widget_class(self):  # create instance of widget
+                    print("  add vue:", widget)
+                    # self.tabs.addTab(widget, obj_plug.NAME)
+                    self.tabs.addWidget(widget)
 
             # create menu/btn entries
             # we have some functions without create object (icon, title, ...)
             action = QAction(obj_plug.getIcon(), obj_plug.getTitle(), self)
-            action.triggered.connect(partial(self.change_module, i))
+            action.triggered.connect(partial(self.change_module, tab_id))
             self.toolbar.addAction(action)
 
     def change_module(self, id_):

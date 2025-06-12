@@ -5,6 +5,7 @@ import sys
 
 class PluginBase:
     NAME = ""
+    ORDER = 100
 
     @classmethod
     def getAction(cls):
@@ -23,7 +24,7 @@ class PluginBase:
     def isEnable() -> bool:
         return True
 
-    def app(self) -> type:
+    def get_class(self) -> type:
         return None
 
 
@@ -65,12 +66,19 @@ class PluginManager:
             mod = self.load_module(name, file_)
             if mod:
                 try:
-                    self.modules[name] = mod.Plugin()  # save the main class
+                    self.modules[name] = mod.Plugin()  # save the class in module
                 except AttributeError:
                     # no class Plugin in file !
                     pass
 
-        # TODO sort by PluginBase.order() !
+        # sort plugins
+        print()
+        print(self.modules)
+        sorts = {k: v for k, v in sorted(self.modules.items(), key=lambda item: item[1].ORDER)}
+        self.modules = sorts
+        print(self.modules)
+
+        print()
         return self.modules
 
     @staticmethod
