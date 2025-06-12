@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from functools import partial
 from plugins._plugin.base import PluginBase, PluginManager
+import sys
 
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QAction
@@ -26,6 +27,7 @@ class MainWindow(QMainWindow):
             self.tabs = QTabWidget()  # TODO rewrite paint() for display icon + text in tab
             self.tabs.setTabPosition(QTabWidget.TabPosition.East)
             self.tabs.setIconSize(QSize(42, 42))
+            self.tabs.setTabBarAutoHide(True)
             self.tabs.setStyleSheet("QTabBar::tab { min-width: 100px;  alignment: center;}")
         else:
             self.tabs = QStackedLayout()
@@ -44,10 +46,22 @@ class MainWindow(QMainWindow):
         self._init_plugins()
 
     def _init_plugins(self):
+        one = ""
+        if args := [a.removeprefix("--").lower() for a in sys.argv if a.startswith("--")]:
+            one = args[0]
+            self.toolbar.setVisible(False)
+            print("load one plugin ?", one)
+
         plugin_manager = PluginManager()
         plugin_manager.walk("")
 
+        if "-h" in sys.argv:
+            print("Available plugins: ", ", ".join(f"--{p.lower()}" for p in plugin_manager.modules.keys()))
+            exit(0)
+
         for tab_id, name in enumerate(plugin_manager.modules):
+            if one and name != one:
+                continue
             plugin: PluginBase = plugin_manager.modules[name]
             print()
             print(tab_id, plugin.ORDER, name, " python module:", plugin)
@@ -68,9 +82,10 @@ class MainWindow(QMainWindow):
                         self.tabs.addWidget(widget)
 
             # create menu/btn entries
-            action = QAction(plugin.getIcon(), plugin.getTitle(), self)
-            action.triggered.connect(partial(self.change_module, tab_id, plugin.NAME))
-            self.toolbar.addAction(action)
+            if not one:
+                action = QAction(plugin.getIcon(), plugin.getTitle(), self)
+                action.triggered.connect(partial(self.change_module, tab_id, plugin.NAME))
+                self.toolbar.addAction(action)
 
     def change_module(self, id_, title):
         tab = self.tabs
